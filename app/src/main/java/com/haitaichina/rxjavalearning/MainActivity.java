@@ -1,19 +1,14 @@
 package com.haitaichina.rxjavalearning;
-
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import com.orhanobut.logger.Logger;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
-
 public class MainActivity extends AppCompatActivity  implements  View.OnClickListener{
     /**
      * RxJAVA  学习使用
@@ -31,7 +26,6 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
         setContentView(R.layout.activity_main);
         findById();
     }
-
     private void findById() {
         sb = new StringBuilder();
         mInfo = (TextView) findViewById(R.id.info);
@@ -68,18 +62,15 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
             @Override
             public void onNext(Object s) {
                if(s instanceof  Student){
-
                    sb.append("student.name=="+((Student) s).getName());
                    sb.append("\n");
                 }else {
-
                    sb.append("s===="+s);
                    sb.append("\n");
                 }
 
             }
         };
-
         Student Student=new Student();
         Student.name="zhangsan";
         Observable Observable= rx.Observable.just(Student,"123");
@@ -126,7 +117,7 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
                 sb.append("two--"+integer+"\n");
             }
         });
-    /////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////
         Observable.from(data).subscribe(new Action1<Integer>() {
             @Override
             public void call(Integer integer) {
@@ -157,11 +148,10 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
         Observer<String > observer=new Observer<String>() {
             @Override
             public void onCompleted() {
-
                 sb.append("onCompleted");
                 sb.append("\n");
                 mInfo.setText(sb.toString());
-                Log.e("111","--------------------");
+                Log.e("111","--------1------------");
             }
             @Override
             public void onError(Throwable e) {
@@ -183,7 +173,7 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
                 Creat();
                 break;
             case R.id.bt_base:
-                    Just();
+                Just();
                 break;
             case  R.id.bt_base2:
                 From();
@@ -197,5 +187,15 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
             return name;
         }
     }
+
+    /**
+     * Action 是RxJava 的一个接口，常用的有Action0和Action1。
+     * Action :它只有一个方法 call()，这个方法是无参无返回值的；
+     * 由于 onCompleted() 方法也是无参无返回值的，因此 Action0 可以被当成一个包装对象，
+     * 将 onCompleted() 的内容打包起来将自己作为一个参数传入 subscribe() 以实现不完整定义的回调。
+        Action1 :它同样只有一个方法 call(T param)，这个方法也无返回值，但有一个参数；
+        与 Action0 同理，由于 onNext(T obj) 和 onError(Throwable error) 也是单参数无返回值的，
+     因此 Action1 可以将 onNext(obj)和 onError(error) 打包起来传入 subscribe() 以实现不完整定义的回调
+     */
 
 }
