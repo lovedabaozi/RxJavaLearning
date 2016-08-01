@@ -46,4 +46,22 @@
         android:id="@+id/bt_base3"
         android:text="Action"
         />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/bt_base4"
+        android:text="Map"
+        />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/bt_base5"
+        android:text="FlatMap"
+        />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/bt_base6"
+        android:text="Scheduler"
+        />
 </LinearLayout>

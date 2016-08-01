@@ -7,8 +7,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import rx.Observable;
 import rx.Observer;
+import rx.Scheduler;
 import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+
 public class MainActivity extends AppCompatActivity  implements  View.OnClickListener{
     /**
      * RxJAVA  学习使用
@@ -20,6 +26,10 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
     Button bt_base2;
     TextView mInfo;
     StringBuilder sb;
+    Button bt_base3;
+    Button bt_base4;
+    Button bt_base5;
+    Button bt_base6;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +45,14 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
         bt_base2 = (Button) findViewById(R.id.bt_base2);
         bt_base2.setOnClickListener(this);
         bt_base0.setOnClickListener(this);
+        bt_base3 = (Button) findViewById(R.id.bt_base3);
+        bt_base3.setOnClickListener(this);
+        bt_base4 = (Button) findViewById(R.id.bt_base4);
+        bt_base4.setOnClickListener(this);
+        bt_base5 = (Button) findViewById(R.id.bt_base5);
+        bt_base5.setOnClickListener(this);
+        bt_base6 = (Button) findViewById(R.id.bt_base6);
+        bt_base6.setOnClickListener(this);
     }
 
     /**
@@ -68,7 +86,6 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
                    sb.append("s===="+s);
                    sb.append("\n");
                 }
-
             }
         };
         Student Student=new Student();
@@ -178,8 +195,21 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
             case  R.id.bt_base2:
                 From();
                 break;
+            case R.id.bt_base3:
+                Action();
+                break;
+            case  R.id.bt_base4:
+                Map();
+                break;
+            case R.id.bt_base5:
+                FlatMap();
+                break;
+            case  R.id.bt_base6:
+                Scheduler();
+                break;
         }
     }
+
 
     class  Student {
          String name;
@@ -197,5 +227,107 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
         与 Action0 同理，由于 onNext(T obj) 和 onError(Throwable error) 也是单参数无返回值的，
      因此 Action1 可以将 onNext(obj)和 onError(error) 打包起来传入 subscribe() 以实现不完整定义的回调
      */
+
+
+    /**
+     * Action   定义三个对象    onNext(obj)   onError(error)   onCompleted()
+     */
+    private void Action() {
+        Observable Observable= rx.Observable.just("hello","world","!");
+        Action1<String> onNextAction=new Action1<String>() {
+            @Override
+            public void call(String s) {
+                sb.append(s+"\n");
+                mInfo.setText(sb);
+            }
+        };
+
+        Action0 onCompletedAction =new Action0() {
+            @Override
+            public void call() {
+                sb.append("onCompletedAction\n");
+            }
+        };
+
+        Action1<Throwable> onErrorAction =new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+
+            }
+        };
+        /**
+         * 使用 onNextAction，onErrorAction，onCompletedAction
+         * 分别来定义onNext() , onError()  , onCompleted().
+         */
+        Observable.subscribe(onNextAction);
+        Observable.subscribe(onNextAction,onErrorAction);
+        Observable.subscribe(onNextAction,onErrorAction,onCompletedAction);
+
+    }
+
+    /**
+     *  使用map 用到Func1 接口   和 Action1 相似。
+     *  Func1 包装的是有返回值的方法。
+     *  filter: 过滤器
+     */
+    private void Map() {
+        Action0 onCompletedAction =new Action0() {
+            @Override
+            public void call() {
+                sb.append("onCompletedAction\n");
+            }
+        };
+        Observable.just("1","2","3").map(new Func1<String, Integer>() {
+
+            @Override
+            public Integer call(String s) {
+                return Integer.parseInt(s);
+            }
+
+
+        }).filter(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer >2;
+            }
+        }).subscribe(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                Log.e("map=======", integer + "------");
+                sb.append(integer + "\n");
+
+            }
+        });
+    }
+
+    /**
+     *
+     */
+    private void FlatMap() {
+    }
+
+    /**
+     *  Scheduler  线程控制器
+     */
+    private void Scheduler() {
+        Observable.just("1","2").subscribeOn(Schedulers.newThread())// 指定subscribeOn（）发生的线程
+                .observeOn(AndroidSchedulers.mainThread())//指定observeOn（）回调的发生的线程
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String s) {
+                        Log.e("Scheduler====",s+"------------");
+                    }
+                });
+
+        Observable.just("1","2").subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<String, String>() {
+                    @Override
+                    public String call(String s) {
+                        return s;
+                    }
+                }).subscribeOn(Schedulers.io()).
+                observeOn(AndroidSchedulers.mainThread());
+    }
 
 }
