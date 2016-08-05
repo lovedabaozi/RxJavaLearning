@@ -1,11 +1,13 @@
 apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
+
 
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "com.haitaichina.rxjavalearning"
+      applicationId "com.haitaichina.rxjavalearning"
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 1
@@ -13,7 +15,7 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -30,4 +32,19 @@ dependencies {
     compile 'io.reactivex:rxjava:1.1.6'
 
     compile 'com.orhanobut:logger:1.15'
+
+
+    compile 'com.jakewharton:butterknife:8.2.1'
+    apt 'com.jakewharton:butterknife-compiler:8.2.1'
 }
+task makeJar(type: Copy) {
+    delete 'build/libs/mysdk.jar'
+    from('build/intermediates/classes/release')
+    into('build/libs/')
+    include('classes.jar')
+    rename ('classes.jar', 'misdk.jar')
+}
+
+makeJar.dependsOn(build)
+//在终端执行生成JAR包
+// gradlew makeJar
