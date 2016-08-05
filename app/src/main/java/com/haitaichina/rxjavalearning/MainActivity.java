@@ -1,10 +1,14 @@
 package com.haitaichina.rxjavalearning;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.haitaichina.rxjavalearning.activity.Buttertest;
+
 import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
@@ -30,6 +34,7 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
     Button bt_base4;
     Button bt_base5;
     Button bt_base6;
+    Button bt_base7;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +58,8 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
         bt_base5.setOnClickListener(this);
         bt_base6 = (Button) findViewById(R.id.bt_base6);
         bt_base6.setOnClickListener(this);
+        bt_base7 = (Button) findViewById(R.id.bt_base7);
+        bt_base7.setOnClickListener(this);
     }
 
     /**
@@ -79,12 +86,12 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
 
             @Override
             public void onNext(Object s) {
-               if(s instanceof  Student){
-                   sb.append("student.name=="+((Student) s).getName());
-                   sb.append("\n");
+                if(s instanceof  Student){
+                    sb.append("student.name=="+((Student) s).getName());
+                    sb.append("\n");
                 }else {
-                   sb.append("s===="+s);
-                   sb.append("\n");
+                    sb.append("s===="+s);
+                    sb.append("\n");
                 }
             }
         };
@@ -140,7 +147,7 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
             public void call(Integer integer) {
                 sb.append("three"+integer);
                 sb.append("\n");
-                 mInfo.setText(sb);
+                mInfo.setText(sb);
             }
         });
     }
@@ -207,12 +214,16 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
             case  R.id.bt_base6:
                 Scheduler();
                 break;
+            case  R.id.bt_base7:
+                Intent Intent=new Intent(MainActivity.this, Buttertest.class);
+                startActivity(Intent);
+                break;
         }
     }
 
 
     class  Student {
-         String name;
+        String name;
         public String getName() {
             return name;
         }
@@ -223,8 +234,8 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
      * Action :它只有一个方法 call()，这个方法是无参无返回值的；
      * 由于 onCompleted() 方法也是无参无返回值的，因此 Action0 可以被当成一个包装对象，
      * 将 onCompleted() 的内容打包起来将自己作为一个参数传入 subscribe() 以实现不完整定义的回调。
-        Action1 :它同样只有一个方法 call(T param)，这个方法也无返回值，但有一个参数；
-        与 Action0 同理，由于 onNext(T obj) 和 onError(Throwable error) 也是单参数无返回值的，
+     Action1 :它同样只有一个方法 call(T param)，这个方法也无返回值，但有一个参数；
+     与 Action0 同理，由于 onNext(T obj) 和 onError(Throwable error) 也是单参数无返回值的，
      因此 Action1 可以将 onNext(obj)和 onError(error) 打包起来传入 subscribe() 以实现不完整定义的回调
      */
 
