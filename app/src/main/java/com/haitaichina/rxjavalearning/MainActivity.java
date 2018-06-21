@@ -1,21 +1,19 @@
 package com.haitaichina.rxjavalearning;
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.haitaichina.rxjavalearning.activity.Buttertest;
-
 import rx.Observable;
 import rx.Observer;
-import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Action1;
+import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -35,6 +33,9 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
     Button bt_base5;
     Button bt_base6;
     Button bt_base7;
+    rx.Observable mObservable;
+
+    Observer<String > observer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,6 +151,17 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
                 mInfo.setText(sb);
             }
         });
+
+
+        Observable.from(data).subscribe(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+               Log.e("AAA","---"+integer);
+            }
+        });
+
+
+       // Observable.flatMap()
     }
     /**
      * RX 最基本用法：
@@ -158,7 +170,8 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
      */
     public  void  Creat(){
         sb.setLength(0);
-        rx.Observable Observable = rx.Observable.create(new rx.Observable.OnSubscribe<String>() {
+
+        mObservable = rx.Observable.create(new rx.Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 subscriber.onNext("1");
@@ -169,7 +182,8 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
             }
         });
 
-        Observer<String > observer=new Observer<String>() {
+
+        observer = new Observer<String>() {
             @Override
             public void onCompleted() {
                 sb.append("onCompleted");
@@ -187,7 +201,7 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
                 Log.e("111","---------2-----------");
             }
         };
-        Observable.subscribe(observer);
+        mObservable.subscribe(observer);
     }
 
     @Override
@@ -215,17 +229,29 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
                 Scheduler();
                 break;
             case  R.id.bt_base7:
-                Intent Intent=new Intent(MainActivity.this, Buttertest.class);
-                startActivity(Intent);
+                //Intent Intent=new Intent(MainActivity.this, Buttertest.class);
+                //startActivity(Intent);
                 break;
         }
     }
 
 
-    class  Student {
+    static class  Student {
         String name;
+        String source;
+        public String getSource(){
+            return source;
+        }
         public String getName() {
             return name;
+        }
+
+
+          static class  Source{
+            String source="123";
+            public String getName() {
+                return source;
+            }
         }
     }
 
@@ -253,6 +279,13 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
             }
         };
 
+        Action1<String> stringaction1=new Action1<String>() {
+            @Override
+            public void call(String s) {
+
+            }
+        };
+
         Action0 onCompletedAction =new Action0() {
             @Override
             public void call() {
@@ -266,6 +299,14 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
 
             }
         };
+
+        Func0<String> func0=new Func0<String>() {
+            @Override
+            public String call() {
+                Log.e("AAA","function===");
+                return "function----";
+            }
+        };
         /**
          * 使用 onNextAction，onErrorAction，onCompletedAction
          * 分别来定义onNext() , onError()  , onCompleted().
@@ -273,7 +314,9 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
         Observable.subscribe(onNextAction);
         Observable.subscribe(onNextAction,onErrorAction);
         Observable.subscribe(onNextAction,onErrorAction,onCompletedAction);
+        Observable.subscribe(onNextAction);
 
+       // Observable.subscribe(func0);
     }
 
     /**
@@ -282,13 +325,10 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
      *  filter: 过滤器
      */
     private void Map() {
-        Action0 onCompletedAction =new Action0() {
-            @Override
-            public void call() {
-                sb.append("onCompletedAction\n");
-            }
-        };
-        Observable.just("1","2","3").map(new Func1<String, Integer>() {
+        sb.setLength(0);
+
+        Observable.just("1","2","3").subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io()).map(new Func1<String, Integer>() {
 
             @Override
             public Integer call(String s) {
@@ -304,17 +344,148 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
         }).subscribe(new Action1<Integer>() {
             @Override
             public void call(Integer integer) {
-                Log.e("map=======", integer + "------");
-                sb.append(integer + "\n");
 
+
+
+                sb.append("change String to integer --map--"+integer + "\n");
+
+                Log.e("AAA","----xiancheng---"+ Thread.currentThread().getName());
+
+            }
+        });
+
+/*
+
+        Observable.create(new Observable.OnSubscribe<String>() {
+
+
+            @Override
+            public void call(Subscriber<? super String> subscriber) {
+                subscriber.onStart();
+                subscriber.onNext("1");
+                subscriber.onNext("2");
+                subscriber.onNext("3");
+                subscriber.onNext("4");
+                subscriber.onCompleted();
+
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .map(new Func1<String, Integer>() {
+                    @Override
+                    public Integer call(String s) {
+                        return Integer.parseInt(s);
+                    }
+                }).filter(new Func1<Integer, Boolean>() {
+            @Override
+            public Boolean call(Integer integer) {
+                return integer>1;
+            }
+        }).subscribe(new Action1<Integer>() {
+            @Override
+            public void call(Integer integer) {
+                Log.e("AAA","----"+integer);
+                Log.e("AAA","----xiancheng---"+ Thread.currentThread().getName());
+            }
+        });
+*/
+
+
+
+     /* Observable.just(1,2).map(new Func1<Integer, String>() {
+          @Override
+          public String call(Integer integer) {
+              return integer+"";
+          }
+      }).subscribe(new Action1<String>() {
+          @Override
+          public void call(String s) {
+              Log.e("AAA", "type=map---"+s);
+              sb.append("change integer to String --map--"+s + "\n");
+
+              mInfo.setText(sb.toString());
+          }
+      });*/
+
+
+
+
+
+
+
+
+
+    }
+
+    public  Observable getSource(final Student student){
+        return  Observable.create(new Observable.OnSubscribe<Student.Source>() {
+            @Override
+            public void call(Subscriber<? super Student.Source> subscriber) {
+                String source = student.getSource();
+                Student.Source  source1=new Student.Source();
+                subscriber.onNext(source1);
+                subscriber.onCompleted();
             }
         });
     }
 
+
     /**
+     *对Observable发射的数据都应用(apply)一个函数，这个函数返回一个Observable，
+     * 然后合并这些Observables，并且发送（emit）合并的结果。
+     * flatMap和map操作符很相像，flatMap发送的是合并后的Observables，
+     * map操作符发送的是应用函数后返回的结果集
      *
+     *
+     *
+     * 返回多个 observable   转换。。。
      */
     private void FlatMap() {
+
+        Student student=new Student();
+        student.name="dabaozi";
+        student.source="english";
+
+        Observable.just(student).flatMap(new Func1<Student, Observable<Student.Source>>() {
+            @Override
+            public Observable<Student.Source> call(Student student) {
+                return getSource(student);
+            }
+        }).subscribe(new Action1<Student.Source>() {
+            @Override
+            public void call(Student.Source source) {
+                Log.e("AAA","---source---"+source.source);
+            }
+        });
+
+
+        Observable.create(new Observable.OnSubscribe<Integer>() {
+            @Override
+            public void call(Subscriber<? super Integer> subscriber) {
+                subscriber.onNext(1);
+                subscriber.onNext(2);
+                subscriber.onNext(3);
+            }
+
+
+        }).flatMap(new Func1<Integer, Observable<String>>() {
+            @Override
+            public Observable<String> call(Integer integer) {
+                return Observable.create(new Observable.OnSubscribe<String>() {
+                    @Override
+                    public void call(Subscriber<? super String> subscriber) {
+                        subscriber.onNext("11111");
+                        subscriber.onNext("22222");
+                        subscriber.onNext("33333");
+                    }
+                });
+            }
+        }).subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                Log.e("AAA","---s---"+s);
+            }
+        });
+
     }
 
     /**
@@ -326,7 +497,7 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
                 .subscribe(new Action1<String>() {
                     @Override
                     public void call(String s) {
-                        Log.e("Scheduler====",s+"------------");
+                        Log.e("AAA",s+"------------");
                     }
                 });
 
@@ -338,7 +509,31 @@ public class MainActivity extends AppCompatActivity  implements  View.OnClickLis
                         return s;
                     }
                 }).subscribeOn(Schedulers.io()).
-                observeOn(AndroidSchedulers.mainThread());
+                observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+                Log.e("AAA",s+"---");
+            }
+        });
+
+
+        Observable.just("1.0","2").subscribeOn(Schedulers.io()).subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+
+            }
+        });
+
+
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(mObservable!=null&& observer!=null){
+           // Observable.unsubscribeOn()
+            //Observable.unsubscribeOn()
+        }
+
+    }
 }
